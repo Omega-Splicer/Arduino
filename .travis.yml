@@ -1,13 +1,4 @@
 language: c
-# sudo: false
-# addons:
-#   apt:
-#     sources:
-#     - deadsnakes
-#     - ubuntu-toolchain-r-test
-#     packages:
-#     - cmake
-#     - time
 before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16"
   - sleep 3
@@ -20,9 +11,8 @@ install:
   - ln -s $PWD /usr/local/share/arduino/libraries/Adafruit_FONA
   - arduino --install-library "Adafruit SleepyDog Library,Adafruit MQTT Library"
 script:
-  - arduino --verify --board arduino:avr:nano $PWD/omega-splicer.ino
+  - arduino --verify --board arduino:avr:uno $PWD/omega-splicer.ino
 notifications:
   email:
     on_success: change
     on_failure: change
-
