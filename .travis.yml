@@ -11,7 +11,7 @@ install:
   - ln -s $PWD /usr/local/share/arduino/libraries/Adafruit_FONA
   - arduino --install-library "Adafruit SleepyDog Library,Adafruit MQTT Library"
 script:
-  - arduino --verify --board arduino:avr:uno $PWD/*.cpp
+  - arduino --verify --board arduino:avr:uno $PWD/Arduino.ino
 notifications:
   email:
     on_success: change
