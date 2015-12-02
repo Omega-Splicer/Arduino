@@ -5,8 +5,8 @@ before_install:
   - export DISPLAY=:1.0
   - wget http://downloads.arduino.cc/arduino-1.6.5-linux64.tar.xz
   - tar xf arduino-1.6.5-linux64.tar.xz
-  - pwd
-  - ls arduino-1.6.5
+  - ls $TRAVIS_BUILD_DI
+  - echo $TRAVIS_BUILD_DI
   #- sudo ln -s ~/arduino /usr/local/bin/arduino
   # - sudo mv arduino-1.6.5 /usr/local/share/arduino
   # -  sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
