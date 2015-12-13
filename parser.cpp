@@ -153,35 +153,99 @@ bool		onlyAlphaNum(t_buffer *buffer)
 	return (true);
 }
 
-void		executeCmd(t_buffer *cmd, t_buffer *param)
+void		disconnect(t_buffer *param, bool *running, t_device *device)
 {
-	/*
-	FirmwareUpdate
-	Initialize
-	Control
-	Update
-	Disconnect
-	*/
-	Serial.println(cmd->data);
-	if (param)
-		Serial.println(param->data);
+	*running = false;
 }
 
-int			doCmd(t_buffer *buffer)
+void		firmwareUpdate(t_buffer *param, bool *running, t_device *device)
+{
+	if (localVersion.major > device->version.major ||
+		(localVersion.major >= device->version.major &&
+		 localVersion.minor > device->version.minor)) {
+		respondKoFrimWare();
+	}
+	else {
+		respondOk();
+	}
+}
+
+void		initialize(t_buffer *param, bool *running, t_device *device)
+{
+	t_buffer	respondBuffer;
+	int			i;
+
+	detect_plugin(device);
+	initializeBuffer(&respondBuffer);
+	if (!addToBuffer(&respondBuffer, device->name, strlen(device->name)) ||
+		!addToBuffer(&respondBuffer, ",", 1)) {
+		respondKoBuffer();
+		return ;
+	}
+	i = 0;
+	while (device->plugins && device->plugins[i])
+		i++;
+	if (!addToBuffer(&respondBuffer, i)) {
+		respondKoBuffer();
+		return ;
+	}
+	i = 0;
+	while (device->plugins && device->plugins[i]) {
+		if (!addToBuffer(&respondBuffer, ",", 1) ||
+			!addToBuffer(&respondBuffer, device->plugins[i]->name, strlen(device->plugins[i]->name)) ||
+			!addToBuffer(&respondBuffer, ",", 1) ||
+			!addToBuffer(&respondBuffer, device->plugins[i]->parameters, strlen(device->plugins[i]->parameters))) {
+			respondKoBuffer();
+			return ;
+		}
+		i++;
+	}
+	if (!addToBuffer(&respondBuffer, ";", 1)) {
+		respondKoBuffer();
+		return ;
+	}
+	respond(respondBuffer.data, respondBuffer.size);
+	//todo
+}
+
+void		control(t_buffer *param, bool *running, t_device *device)
+{
+	//todo
+}
+
+void		update(t_buffer *param, bool *running, t_device *device)
+{
+	//todo
+}
+
+void		executeCmd(t_buffer *cmd, t_buffer *param, bool *running, t_device *device)
+{
+	int i = 0;
+	while (cmdPtr[i].cmd != NULL) {
+		if (!strncmp(cmdPtr[i].cmdName, cmd->data, cmd->size)) {
+			cmdPtr[i].cmd(param, running, device);
+			return ;
+		}
+		i++;
+	}
+	respondKoFrimWare();
+}
+
+int			doCmd(t_buffer *buffer, bool *running, t_device *device)
 {
 	t_buffer	cmd;
 	t_buffer	parser;
 	int			cmdSize;
 
 	getsomething(buffer, &parser, ';');
+	cmdSize = parser.size;
 	if (getsomething(&parser, &cmd, ':')) {
 		deleteFromBuffer(&parser, cmd.size + 1);
-		executeCmd(&cmd, &parser);
+		executeCmd(&cmd, &parser, running, device);
 	}
 	else {
-		executeCmd(&parser, NULL);
+		executeCmd(&parser, NULL, running, device);
 	}
-	cmdSize = parser.size;
 	return (cmdSize);
 }
 
@@ -207,7 +271,8 @@ bool		handshakeDataCheck(t_device *device, t_buffer *buffer)
 					if (onlyDigit(&subParser)) {
 						device->version.minor = atoi(parser.data);
 						/* Print log + debug */
-						Serial.print("Handhake done : ");
+						/*
+						Serial.print("//Handhake done : ");
 						Serial.print(device->name);
 						Serial.print(" : ");
 						Serial.print(device->version.major);
@@ -216,6 +281,7 @@ bool		handshakeDataCheck(t_device *device, t_buffer *buffer)
 						activateLED(pin_DataOk);
 						delay(100);
 						desactivateLED(pin_DataOk);
+						*/
 						/* end log */
 						deleteFromBuffer(buffer, size);
 						return (true);
@@ -225,10 +291,8 @@ bool		handshakeDataCheck(t_device *device, t_buffer *buffer)
 		}
 	}
 	/* Print log + debug */
-	activateLED(pin_DataError);
-	desactivateLED(pin_DataError);
-	//Serial.println("Handshake error");
-	activateLED(pin_DataError);
+	//Serial.println("//Handshake error");
+	//activateLED(pin_DataError);
 	/* end log */
 	return (false);
 }
@@ -238,7 +302,7 @@ bool		handshake(t_device *device, t_buffer *buffer)
 	if (handshakeDataCheck(device, buffer)) {
 		if (device->version.major != localVersion.major ||
 			device->version.minor != localVersion.minor) {
-			Serial.println("Wrong version");
+			//Serial.println("//Wrong version");
 			return (false);
 		}
 		return (true);
@@ -251,37 +315,23 @@ void	respondKoFrimWare()
 	t_buffer buffer;
 
 	initializeBuffer(&buffer);
-	addToBuffer(&buffer, "KO;", 3);
-	addToBuffer(&buffer, localVersion.major);
-	addToBuffer(&buffer, ".", 1);
-	addToBuffer(&buffer, localVersion.minor);
-	addToBuffer(&buffer, ";", 1);
+	if (!addToBuffer(&buffer, "KO:", 3) ||
+		!addToBuffer(&buffer, localVersion.major) ||
+		!addToBuffer(&buffer, ".", 1) ||
+		!addToBuffer(&buffer, localVersion.minor) ||
+		!addToBuffer(&buffer, ";", 1)) {
+		respondKoBuffer();
+		return ;
+	}
 	respond(buffer.data, buffer.size);
 }
 
-/*
-Handshake:clientName,version;
+void	respondKoBuffer()
+{
+	respond("KO:Error;", 9);
+}
 
-
-Handshake:clientName,1.2;
-
-
-		frimwareUpdate
-		initialise : name, numberPlugin, pluginsName
-		control : pluginName, parameters
-		disconnect
-
-		update : data from captor
-*/
-
-/*
-Handhake : name, version
-	Respond OK if ok or KO if wrong version
-
-FrimaweUpdate :
-	Respond with update
-
-Initialize :
-	
-*/
-
+void	respondOk()
+{
+	respond("OK;", 3);
+}
