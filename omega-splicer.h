@@ -8,7 +8,7 @@ typedef struct
 	//in pin
 	//out pin
 	char name[32];
-	char parameters[64];
+	char parameters[32];
 } t_plugin;
 
 typedef struct
@@ -20,7 +20,8 @@ typedef struct
 typedef struct
 {
 	char		name[32];
-	t_version version;
+	t_version	version;
+	t_plugin	**plugins;
 } t_device;
 
 typedef struct
@@ -29,33 +30,34 @@ typedef struct
 	char			data[128];
 } t_buffer;
 
+typedef struct
+{
+	char *cmdName;
+	void (*cmd)(t_buffer *param, bool *running, t_device *device);
+} t_cmdPtr;
+
 static const int pin_Paired	= 2;
 static const int pin_DataOk	= 3;
 static const int pin_DataError	= 4;
 static const t_version localVersion = {1, 0};
 
-static t_plugin plugins[4];
-static const int nbPlugins = 2;
-
-/* .ino */
 void	loop();
 void	setup();
-/* .ino */
 
 void	desactivateLED(int led);
 void	activateLED(int led);
 
-void	detect_plugin();
+void	detect_plugin(t_device *device);
 void	signal();
 void	run();
 bool	rcvData(t_buffer *buffer);
 void	respond(char *data);
 void	respond(char *data, unsigned int size);
 
-bool	pair();
-void	unpair();
+bool			pair();
+void			unpair();
+unsigned int	read(char *buffer, int size, unsigned int timeout = 0, unsigned int timeRead = 100);
 
-/* parser */
 
 void			initializeBuffer(t_buffer *buffer);
 bool			addToBuffer(t_buffer *to, t_buffer *from);
@@ -66,8 +68,21 @@ void			deleteFromBuffer(t_buffer *buffer, unsigned int size);
 bool			commandEnded(t_buffer *buffer);
 bool			handshake(t_device *device, t_buffer *buffer);
 void			respondKoFrimWare();
-int				doCmd(t_buffer *buffer);
+void			respondKoBuffer();
+void			respondOk();
+int				doCmd(t_buffer *buffer, bool *running, t_device *device);
 
-unsigned int	read(char *buffer, int size, unsigned int timeout = 0, unsigned int timeRead = 100);
+void			disconnect(t_buffer *param, bool *running, t_device *device);
+void			firmwareUpdate(t_buffer *param, bool *running, t_device *device);
+void			initialize(t_buffer *param, bool *running, t_device *device);
+void			control(t_buffer *param, bool *running, t_device *device);
+
+static const t_cmdPtr cmdPtr[] = {
+	{"Disconnect", &disconnect},
+	{"FirmwareUpdate", &firmwareUpdate},
+	{"Initialize", &initialize},
+	{"Control", &control},
+	{NULL, NULL}
+};
 
 #endif
