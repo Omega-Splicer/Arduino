@@ -1,23 +1,23 @@
-// Community of Robots//
 
-//Dc motor example code//
+int motor1Pin1 = 3;    // pin 2 on L293D
+int motor1Pin2 = 4;    // pin 7 on L293D
+int enablePin = 9;    // pin 1 on L293D
 
-int motorpin1 = 3;                  //define digital output pin no.
+void setup() {
 
-int motorpin2 = 4;                  //define digital output pin no.
+  // set all the other pins you're using as outputs:
+  pinMode(motor1Pin1, OUTPUT);
+  pinMode(motor1Pin2, OUTPUT);
+  pinMode(enablePin, OUTPUT);
 
-void setup () {
-
-  pinMode(motorpin1,OUTPUT);        //set pin 3 as output
-
-  pinMode(motorpin2,OUTPUT);        // set pin 4 as output
-
+  // set enablePin high so that motor can turn on:
+  digitalWrite(enablePin, HIGH);
 }
 
-void loop () {
+void loop() {
+  // if the switch is high, motor will turn on one direction:
 
-  digitalWrite(motorpin1,LOW);
-
-  digitalWrite(motorpin2,HIGH);
+    digitalWrite(motor1Pin1, LOW);   // set pin 2 on L293D low
+    digitalWrite(motor1Pin2, HIGH);  // set pin 7 on L293D high
 
 }
