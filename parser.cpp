@@ -1,91 +1,5 @@
 #include "omega-splicer.h"
 
-void	initializeBuffer(t_buffer *buffer)
-{
-	buffer->size = 0;
-	buffer->data[0] = 0;
-}
-
-bool	addToBuffer(t_buffer *to, t_buffer *from)
-{
-	if (to->size + from->size >= 128)
-		return (false);
-	memcpy(to->data + to->size, from->data, from->size);
-	to->size += from->size;
-	to->data[to->size] = 0;
-	return (true);
-}
-
-bool	addToBuffer(t_buffer *to, t_buffer *from, unsigned int size)
-{
-	if (to->size + size >= 128)
-		return (false);
-	memcpy(to->data + to->size, from->data, size);
-	to->size += size;
-	to->data[to->size] = 0;
-	return (true);
-}
-
-bool	addToBuffer(t_buffer *to, char *from, unsigned int size)
-{
-	if (to->size + size >= 128)
-		return (false);
-	memcpy(to->data + to->size, from, size);
-	to->size += size;
-	to->data[to->size] = 0;
-	return (true);
-}
-
-bool	addToBuffer(t_buffer *to, int number)
-{
-	char	tmp[10];
-
-	sprintf(tmp, "%d", number);
-	if (to->size + strlen(tmp) >= 128)
-		return (false);
-	memcpy(to->data + to->size, tmp, strlen(tmp));
-	to->size += strlen(tmp);
-	to->data[to->size] = 0;
-	return (true);
-}
-
-void	deleteFromBuffer(t_buffer *buffer, unsigned int size)
-{
-	unsigned int	bufferLeft = buffer->size - size;
-
-	if (bufferLeft <= 0 || bufferLeft >= 128) {
-		buffer->size = 0;
-		buffer->data[0] = 0;
-	}
-	else {
-		memcpy(buffer->data, buffer->data + size, bufferLeft);
-		buffer->size = bufferLeft;
-		buffer->data[buffer->size] = 0;
-	}
-}
-
-bool	getsomething(t_buffer *toSearch, t_buffer *toStore, char token)
-{
-	unsigned int i = 0;
-	t_buffer	data;
-
-	initializeBuffer(&data);
-	initializeBuffer(toStore);
-	addToBuffer(&data, toSearch);
-	while (i != toSearch->size)
-	{
-		if (toSearch->data[i] == token)
-		{
-			addToBuffer(toStore, toSearch, i);
-			toStore->data[i] = 0;
-			toStore->size = i;
-			return (true);
-		}
-		i++;
-	}
-	return (false);
-}
-
 bool	commandEnded(t_buffer *buffer)
 {
 	unsigned int i = 0;
@@ -97,60 +11,6 @@ bool	commandEnded(t_buffer *buffer)
 		i++;
 	}
 	return (false);
-}
-
-bool		byteBetween(char b, char firstToken, char lastToken)
-{
-	if (b >= firstToken && b <= lastToken)
-		return (true);
-	return (false);
-}
-
-bool		onlyDigit(t_buffer *buffer)
-{
-	unsigned int i = 0;
-
-	if (buffer->size == 0)
-		return (false);
-	if (buffer->size > 0 && buffer->data[0] == '-')
-		i++;
-	while (i != buffer->size)
-	{
-		if (!byteBetween(buffer->data[i], '0', '9'))
-			return (false);
-		i++;
-	}
-	return (true);
-}
-
-bool		onlyAlpha(t_buffer *buffer)
-{
-	unsigned int i = 0;
-
-	if (buffer->size == 0)
-		return (false);
-	while (i != buffer->size)
-	{
-		if (!(byteBetween(buffer->data[i], 'A', 'Z') || byteBetween(buffer->data[i], 'a', 'z')))
-			return (false);
-		i++;
-	}
-	return (true);
-}
-
-bool		onlyAlphaNum(t_buffer *buffer)
-{
-	unsigned int i = 0;
-
-	if (buffer->size == 0)
-		return (false);
-	while (i != buffer->size)
-	{
-		if (!(byteBetween(buffer->data[i], '0', '9') || byteBetween(buffer->data[i], 'A', 'Z') || byteBetween(buffer->data[i], 'a', 'z')))
-			return (false);
-		i++;
-	}
-	return (true);
 }
 
 void		disconnect(t_buffer *param, bool *running, t_device *device)
@@ -210,12 +70,49 @@ void		initialize(t_buffer *param, bool *running, t_device *device)
 
 void		control(t_buffer *param, bool *running, t_device *device)
 {
-	//todo
+	int i;
+	t_buffer pluginName;
+	bool done = false;
+
+	initializeBuffer(&pluginName);
+	if (getsomething(param, &pluginName, ',')) {
+		deleteFromBuffer(param, pluginName.size + 1);
+	}
+	else {
+		addToBuffer(&pluginName, param);
+	}
+
+	i = 0;
+	while (device->plugins && device->plugins[i]) {
+		if (device->plugins[i]->control) {
+			if (pluginName.size == strlen(device->plugins[i]->name) && !strncmp(pluginName.data, device->plugins[i]->name, pluginName.size)) {
+				device->plugins[i]->control(device->plugins[i], param);
+				done = true;
+			}
+		}
+		i++;
+	}
+	if (!done)
+		respondKo();
 }
 
 void		update(t_buffer *param, bool *running, t_device *device)
 {
-	//todo
+	int i;
+	bool done = false;
+
+	i = 0;
+	while (device->plugins && device->plugins[i]) {
+		if (device->plugins[i]->update) {
+			if (param->size == strlen(device->plugins[i]->name) && !strncmp(param->data, device->plugins[i]->name, param->size)) {
+				device->plugins[i]->update(device->plugins[i]);
+				done = true;
+			}
+		}
+		i++;
+	}
+	if (!done)
+		respondKo();
 }
 
 void		executeCmd(t_buffer *cmd, t_buffer *param, bool *running, t_device *device)
@@ -272,7 +169,7 @@ bool		handshakeDataCheck(t_device *device, t_buffer *buffer)
 						device->version.minor = atoi(parser.data);
 						/* Print log + debug */
 						/*
-						Serial.print("//Handhake done : ");
+						Serial.print("Handhake done : ");
 						Serial.print(device->name);
 						Serial.print(" : ");
 						Serial.print(device->version.major);
@@ -291,7 +188,7 @@ bool		handshakeDataCheck(t_device *device, t_buffer *buffer)
 		}
 	}
 	/* Print log + debug */
-	//Serial.println("//Handshake error");
+	//Serial.println("Handshake error");
 	//activateLED(pin_DataError);
 	/* end log */
 	return (false);
@@ -302,7 +199,7 @@ bool		handshake(t_device *device, t_buffer *buffer)
 	if (handshakeDataCheck(device, buffer)) {
 		if (device->version.major != localVersion.major ||
 			device->version.minor != localVersion.minor) {
-			//Serial.println("//Wrong version");
+			//Serial.println("Wrong version");
 			return (false);
 		}
 		return (true);
@@ -329,6 +226,11 @@ void	respondKoFrimWare()
 void	respondKoBuffer()
 {
 	respond("KO:Error;", 9);
+}
+
+void	respondKo()
+{
+	respond("KO;", 9);
 }
 
 void	respondOk()

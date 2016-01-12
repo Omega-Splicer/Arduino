@@ -55,3 +55,27 @@ void	unpair()
 	Serial.println("//Device Unpaired");
 	delay(100);
 }
+
+
+bool	rcvData(t_buffer *buffer)
+{
+	t_buffer	tmp;
+
+	tmp.size = read(tmp.data, 128);
+	return (addToBuffer(buffer, &tmp));
+	//Simulation of reciving data from bluetooth, obliously this is a debug feature
+}
+
+void	respond(char *data, unsigned int size)
+{
+	//Obviously, with the communication module, this gonna change
+	Serial.println(data);
+	delay(100);
+}
+
+void	respond(char *data) //careful, only debug
+{
+	//Obviously, with the communication module, this gonna change
+	Serial.println(data);
+	delay(100);
+}

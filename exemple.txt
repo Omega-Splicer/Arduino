@@ -8,9 +8,10 @@ Details :
 	Initialize :
 		Initialize:nameDevice,nbPlugin[,pluginName,paramPlugin]*;
 
-Todo :
-	Update;
-		(Response)
-		Update:pluginName[,dataName=dataContent]*;
-	Control;
-		Control:pluginName[,ArgN]*;
+Update;
+	(Request)
+		Update:pluginName;
+	(Response)
+		Update:pluginName[,data]*;
+Control;
+	Control:pluginName[,ArgN]*;

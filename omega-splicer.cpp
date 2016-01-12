@@ -1,6 +1,6 @@
 #include "omega-splicer.h"
 
-t_plugin		*initializePlugin(char *name, char * parameters)
+t_plugin		*initializePlugin(char *name, char * parameters, int inPin, int outPin, void (*control)(struct s_plugin *plugin, t_buffer *param), void (*update)(struct s_plugin *plugin))
 {
 	t_plugin	*plugin;
 
@@ -10,6 +10,10 @@ t_plugin		*initializePlugin(char *name, char * parameters)
 		plugin->name[strlen(name)] = 0;
 		strcpy(plugin->parameters, parameters);
 		plugin->parameters[strlen(parameters)] = 0;
+		plugin->inPin = inPin;
+		plugin->outPin = outPin;
+		plugin->control = control;
+		plugin->update = update;
 	}
 	return (plugin);
 }
@@ -24,11 +28,11 @@ void	detect_plugin(t_device *device)
 	}
 	if (device->plugins)
 		free(device->plugins);
-	//debug purpose, obviously (leak memory ifm I don't know why, the first attempt fail, and second pass, here for debug)
+	//debug purpose (leak memory if the first attempt fail, and second pass)
 	device->plugins = (t_plugin**)malloc(3 * sizeof(t_plugin *));
 	if (device->plugins) {
-		device->plugins[0] = initializePlugin("FrontMotor", "DIGIT[3]");
-		device->plugins[1] = initializePlugin("Rudder", "DIGIT[3]");
+		device->plugins[0] = initializePlugin("FrontMotor", "DIGIT[3]", 0, 0, NULL, NULL);
+		device->plugins[1] = initializePlugin("Rudder", "DIGIT[3]", 0, 0, controlTest, updateTest);
 		device->plugins[2] = NULL;
 	}
 }
@@ -45,6 +49,8 @@ void	desactivateLED(int led)
 
 void	signal()
 {
+	/*
+	Some debug with LEDs
 	delay(1000);
 	desactivateLED(pin_Paired);
 	desactivateLED(pin_DataOk);
@@ -57,6 +63,7 @@ void	signal()
 	desactivateLED(pin_Paired);
 	desactivateLED(pin_DataOk);
 	desactivateLED(pin_DataError);
+	*/
 	Serial.println("//Arduino succefully started");
 }
 
@@ -116,27 +123,4 @@ void			run()
 	}
 	if (device.plugins)
 		free(device.plugins);
-}
-
-bool	rcvData(t_buffer *buffer)
-{
-	t_buffer	tmp;
-
-	tmp.size = read(tmp.data, 128);
-	return (addToBuffer(buffer, &tmp));
-	//Simulation of reciving data from bluetooth, obliously this is a debug feature
-}
-
-void	respond(char *data, unsigned int size)
-{
-	//Obviously, with the communication module, this need to be changed
-	Serial.println(data);
-	delay(100);
-}
-
-void	respond(char *data) //careful, only debug
-{
-	//Obviously, with the communication module, this need to be changed
-	Serial.println(data);
-	delay(100);
 }
