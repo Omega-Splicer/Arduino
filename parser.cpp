@@ -64,8 +64,7 @@ void		initialize(t_buffer *param, bool *running, t_device *device)
 		respondKoBuffer();
 		return ;
 	}
-	respond(respondBuffer.data, respondBuffer.size);
-	//todo
+	respond(&respondBuffer);
 }
 
 void		control(t_buffer *param, bool *running, t_device *device)
@@ -176,7 +175,6 @@ bool		handshakeDataCheck(t_device *device, t_buffer *buffer)
 						Serial.print(".");
 						Serial.println(device->version.minor);
 						activateLED(pin_DataOk);
-						delay(100);
 						desactivateLED(pin_DataOk);
 						*/
 						/* end log */
@@ -220,7 +218,7 @@ void	respondKoFrimWare()
 		respondKoBuffer();
 		return ;
 	}
-	respond(buffer.data, buffer.size);
+	respond(&buffer);
 }
 
 void	respondKoBuffer()

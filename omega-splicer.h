@@ -44,26 +44,25 @@ static const int pin_DataError	= 4;
 static const t_version localVersion = {1, 0};
 
 /* .ino */
-void	loop();
-void	setup();
-/* .ino */
+void			loop();
+void			setup();
+unsigned int	read(char *buffer, int size, unsigned int timeout = 0, unsigned int timeRead = 100);
+bool			pair();
+void			unpair();
+bool			rcvData(t_buffer *buffer);
+void			respond(t_buffer *buffer);
+void			respond(char *data, unsigned int size);
+
+/* plugin.cpp */
+
+void	detect_plugin(t_device *device);
+
+/* parser */
 
 void	desactivateLED(int led);
 void	activateLED(int led);
-
-void	detect_plugin(t_device *device);
 void	signal();
 void	run();
-bool	rcvData(t_buffer *buffer);
-void	respond(char *data);
-void	respond(char *data, unsigned int size);
-
-bool	pair();
-void	unpair();
-unsigned int	read(char *buffer, int size, unsigned int timeout = 0, unsigned int timeRead = 100);
-
-
-/* parser */
 
 bool			commandEnded(t_buffer *buffer);
 bool			handshake(t_device *device, t_buffer *buffer);
@@ -78,6 +77,8 @@ void			firmwareUpdate(t_buffer *param, bool *running, t_device *device);
 void			initialize(t_buffer *param, bool *running, t_device *device);
 void			control(t_buffer *param, bool *running, t_device *device);
 void			update(t_buffer *param, bool *running, t_device *device);
+t_plugin		*initializePlugin(char *name, char * parameters, int inPin, int outPin, void (*control)(struct s_plugin *plugin, t_buffer *param), void (*update)(struct s_plugin *plugin));
+
 
 /* buffer.cpp */
 
