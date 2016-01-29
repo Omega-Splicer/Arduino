@@ -49,7 +49,7 @@ void loop() {
       digitalWrite(13, LOW);
     }
     else if (inputString == "c")
-    {   //incase of 'b' turn the LED off
+    {   //incase of 'c' turn the LED off
       digitalWrite(motor1Pin1, LOW);   // set pin 2 on L293D low
       digitalWrite(motor1Pin2, LOW);  // set pin 7 on L293D high
       digitalWrite(13, LOW);
