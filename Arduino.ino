@@ -2,14 +2,16 @@
 
 void		setup()
 {
+  
+  	pinMode(STBY, OUTPUT);
 	pinMode(pin_Paired		, OUTPUT);
 	pinMode(pin_DataOk		, OUTPUT);
 	pinMode(pin_DataError , OUTPUT);
+	signal();
 	Serial.begin(9600);
 }
 
 void		loop() {
-	signal();
 	run();
 }
 

@@ -8,4 +8,6 @@
 void	updateTest(struct s_plugin *plugin);
 void	controlTest(struct s_plugin *plugin, t_buffer *param);
 
+void	motorControl(struct s_plugin *plugin, t_buffer *param);
+
 #endif

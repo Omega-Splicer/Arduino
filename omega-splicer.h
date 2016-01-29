@@ -13,6 +13,7 @@ typedef struct s_plugin
 {
 	int		inPin;
 	int 	outPin;
+	int		speedControl;
 	char	name[32];
 	char	parameters[32];
 	void	(*control)(struct s_plugin *plugin, t_buffer *param);
@@ -42,6 +43,9 @@ static const int pin_Paired	= 2;
 static const int pin_DataOk	= 3;
 static const int pin_DataError	= 4;
 static const t_version localVersion = {1, 0};
+
+/* Motor control */
+static const int STBY = 10; //standby
 
 /* .ino */
 void	loop();
