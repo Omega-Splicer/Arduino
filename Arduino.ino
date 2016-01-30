@@ -41,6 +41,7 @@ unsigned int	read(char *buffer, int size, unsigned int timeout, unsigned int tim
 
 bool	pair()
 {
+	/*
 	char	buffer[32];
 
 	read(buffer, 32);
@@ -50,6 +51,9 @@ bool	pair()
 	}
 	//obviously we need to pair a device, but I need to debug this
 	return (false);
+	*/
+	return (true);
+	// Auto-Pair
 }
 
 void	unpair()
@@ -65,19 +69,15 @@ bool	rcvData(t_buffer *buffer)
 
 	tmp.size = read(tmp.data, 128);
 	return (addToBuffer(buffer, &tmp));
-	//Simulation of reciving data from bluetooth, obliously this is a debug feature
+}
+
+void	respond(t_buffer *buffer)
+{
+	Serial.write(buffer->data, buffer->size);
 }
 
 void	respond(char *data, unsigned int size)
 {
-	//Obviously, with the communication module, this gonna change
-	Serial.println(data);
-	delay(100);
-}
 
-void	respond(char *data) //careful, only debug
-{
-	//Obviously, with the communication module, this gonna change
-	Serial.println(data);
-	delay(100);
+	Serial.write(data, size);
 }

@@ -8,12 +8,12 @@ void	updateTest(struct s_plugin *plugin)
 
 void	controlTest(struct s_plugin *plugin, t_buffer *param)
 {
-	Serial.println("//plugin control Ok !!");
 	Serial.println(param->data);
  	Serial.println("--");
  	Serial.println(plugin->inPin);
  	Serial.println("\n");
  	digitalWrite(plugin->inPin,atoi(param->data));
+	Serial.println("//plugin control Ok");
 	respondOk();
 }
 
