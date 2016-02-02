@@ -2,46 +2,10 @@
 # define	OMEGA_SPLICER_H_
 
 # include "Arduino.h"
+# include "structures.h"
+# include "comm.h"
+# include "plugin.h"
 
-typedef struct
-{
-	unsigned int	size;
-	char			data[128];
-} t_buffer;
-
-typedef struct s_plugin
-{
-	int		inPin;
-	int 	outPin;
-	int		speedControl;
-	char	name[32];
-	char	parameters[32];
-	void	(*control)(struct s_plugin *plugin, t_buffer *param);
-	void	(*update)(struct s_plugin *plugin);
-} t_plugin;
-
-typedef struct
-{
-	int major;
-	int minor;
-} t_version;
-
-typedef struct
-{
-	char		name[32];
-	t_version	version;
-	t_plugin	**plugins;
-} t_device;
-
-typedef struct
-{
-	char *cmdName;
-	void (*cmd)(t_buffer *param, bool *running, t_device *device);
-} t_cmdPtr;
-
-static const int pin_Paired	= 2;
-static const int pin_DataOk	= 3;
-static const int pin_DataError	= 4;
 static const t_version localVersion = {1, 0};
 
 /* Motor control */
@@ -50,12 +14,6 @@ static const int STBY = 10; //standby
 /* .ino */
 void			loop();
 void			setup();
-unsigned int	read(char *buffer, int size, unsigned int timeout = 0, unsigned int timeRead = 100);
-bool			pair();
-void			unpair();
-bool			rcvData(t_buffer *buffer);
-void			respond(t_buffer *buffer);
-void			respond(char *data, unsigned int size);
 
 /* plugin.cpp */
 
@@ -66,15 +24,7 @@ void	detect_plugin(t_device *device);
 void	desactivateLED(int led);
 void	activateLED(int led);
 void	signal();
-void	run();
-
-bool			commandEnded(t_buffer *buffer);
-bool			handshake(t_device *device, t_buffer *buffer);
-void			respondKoFrimWare();
-void			respondKoBuffer();
-void			respondOk();
-void			respondKo();
-int				doCmd(t_buffer *buffer, bool *running, t_device *device);
+int		run();
 
 void			disconnect(t_buffer *param, bool *running, t_device *device);
 void			firmwareUpdate(t_buffer *param, bool *running, t_device *device);
@@ -90,7 +40,7 @@ bool	getsomething(t_buffer *toSearch, t_buffer *toStore, char token);
 void	initializeBuffer(t_buffer *buffer);
 bool	addToBuffer(t_buffer *to, t_buffer *from);
 bool	addToBuffer(t_buffer *to, t_buffer *from, unsigned int size);
-bool	addToBuffer(t_buffer *to, char *from, unsigned int size);
+bool	addToBuffer(t_buffer *to, const char *from, unsigned int size);
 bool	addToBuffer(t_buffer *to, int number);
 void	deleteFromBuffer(t_buffer *buffer, unsigned int size);
 bool	byteBetween(char b, char firstToken, char lastToken);
@@ -107,9 +57,6 @@ static const t_cmdPtr cmdPtr[] = {
 	{NULL, NULL}
 };
 
-# include "plugin.h"
-
 #endif
 // getsomething
-
 // token : ,

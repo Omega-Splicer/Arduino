@@ -48,7 +48,7 @@ bool	addToBuffer(t_buffer *to, t_buffer *from, unsigned int size)
 	return (true);
 }
 
-bool	addToBuffer(t_buffer *to, char *from, unsigned int size)
+bool	addToBuffer(t_buffer *to, const char *from, unsigned int size)
 {
 	if (to->size + size >= 128)
 		return (false);

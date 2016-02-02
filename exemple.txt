@@ -15,3 +15,9 @@ Update;
 		Update:pluginName[,data]*;
 Control;
 	Control:pluginName[,ArgN]*;
+
+
+Handshake:clientName,1.0;
+Control:Left,120;
+pair
+Initialize;

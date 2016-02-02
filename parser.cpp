@@ -3,15 +3,6 @@
 bool	commandEnded(t_buffer *buffer)
 {
 	unsigned int i = 0;
-	static int i2 = 0;
-
-	i2++;
-	Serial.println("I = ");
-	Serial.println(i2);
-	Serial.println("\n");
-
-
-
 	while (i != buffer->size) {
 		if (buffer->data[i] == ';') {
 			return (true);
@@ -21,17 +12,12 @@ bool	commandEnded(t_buffer *buffer)
 	return (false);
 }
 
-void		disconnect(t_buffer *param, bool *running, t_device *device)
-{
-	*running = false;
-}
-
 void		firmwareUpdate(t_buffer *param, bool *running, t_device *device)
 {
 	if (localVersion.major > device->version.major ||
 		(localVersion.major >= device->version.major &&
 		 localVersion.minor > device->version.minor)) {
-		respondKoFrimWare();
+		respondKoFrimWare("Cannot update");
 	}
 	else {
 		respondOk();
@@ -122,37 +108,6 @@ void		update(t_buffer *param, bool *running, t_device *device)
 		respondKo();
 }
 
-void		executeCmd(t_buffer *cmd, t_buffer *param, bool *running, t_device *device)
-{
-	int i = 0;
-	while (cmdPtr[i].cmd != NULL) {
-		if (!strncmp(cmdPtr[i].cmdName, cmd->data, cmd->size)) {
-			cmdPtr[i].cmd(param, running, device);
-			return ;
-		}
-		i++;
-	}
-	respondKoFrimWare();
-}
-
-int			doCmd(t_buffer *buffer, bool *running, t_device *device)
-{
-	t_buffer	cmd;
-	t_buffer	parser;
-	int			cmdSize;
-
-	getsomething(buffer, &parser, ';');
-	cmdSize = parser.size;
-	if (getsomething(&parser, &cmd, ':')) {
-		deleteFromBuffer(&parser, cmd.size + 1);
-		executeCmd(&cmd, &parser, running, device);
-	}
-	else {
-		executeCmd(&parser, NULL, running, device);
-	}
-	return (cmdSize);
-}
-
 bool		handshakeDataCheck(t_device *device, t_buffer *buffer)
 {
 	t_buffer parser;
@@ -174,18 +129,6 @@ bool		handshakeDataCheck(t_device *device, t_buffer *buffer)
 					deleteFromBuffer(&parser, subParser.size + 1);
 					if (onlyDigit(&subParser)) {
 						device->version.minor = atoi(parser.data);
-						/* Print log + debug */
-						/*
-						Serial.print("Handhake done : ");
-						Serial.print(device->name);
-						Serial.print(" : ");
-						Serial.print(device->version.major);
-						Serial.print(".");
-						Serial.println(device->version.minor);
-						activateLED(pin_DataOk);
-						desactivateLED(pin_DataOk);
-						*/
-						/* end log */
 						deleteFromBuffer(buffer, size);
 						return (true);
 					}
@@ -193,31 +136,17 @@ bool		handshakeDataCheck(t_device *device, t_buffer *buffer)
 			}
 		}
 	}
-	/* Print log + debug */
-	//Serial.println("Handshake error");
-	//activateLED(pin_DataError);
-	/* end log */
 	return (false);
 }
 
 bool		handshake(t_device *device, t_buffer *buffer)
 {
-
-	Serial.println("// (Handshake)");
 	if (handshakeDataCheck(device, buffer)) {
 
-	Serial.println("VERSION :");
-	Serial.println(localVersion.major);
-	Serial.println("-");
-	Serial.println(localVersion.minor);
 
-	Serial.println("LOCALVERSION :");
-	Serial.println(device->version.major);
-	Serial.println("-");
-	Serial.println(device->version.major);
 		if (device->version.major != localVersion.major ||
 			device->version.minor != localVersion.minor) {
-			Serial.println("Wrong version");
+			respondKoFrimWare("Cannot handshake");
 			return (false);
 		}
 		return (true);
@@ -225,33 +154,3 @@ bool		handshake(t_device *device, t_buffer *buffer)
 	return (false);
 }
 
-void	respondKoFrimWare()
-{
-	t_buffer buffer;
-
-	initializeBuffer(&buffer);
-	if (!addToBuffer(&buffer, "KO:", 3) ||
-		!addToBuffer(&buffer, localVersion.major) ||
-		!addToBuffer(&buffer, ".", 1) ||
-		!addToBuffer(&buffer, localVersion.minor) ||
-		!addToBuffer(&buffer, ";", 1)) {
-		respondKoBuffer();
-		return ;
-	}
-	respond(&buffer);
-}
-
-void	respondKoBuffer()
-{
-	respond("KO:Error;", 9);
-}
-
-void	respondKo()
-{
-	respond("KO;", 9);
-}
-
-void	respondOk()
-{
-	respond("OK;", 3);
-}
