@@ -3,6 +3,14 @@
 bool	commandEnded(t_buffer *buffer)
 {
 	unsigned int i = 0;
+	static int i2 = 0;
+
+	i2++;
+	Serial.println("I = ");
+	Serial.println(i2);
+	Serial.println("\n");
+
+
 
 	while (i != buffer->size) {
 		if (buffer->data[i] == ';') {
@@ -194,10 +202,22 @@ bool		handshakeDataCheck(t_device *device, t_buffer *buffer)
 
 bool		handshake(t_device *device, t_buffer *buffer)
 {
+
+	Serial.println("// (Handshake)");
 	if (handshakeDataCheck(device, buffer)) {
+
+	Serial.println("VERSION :");
+	Serial.println(localVersion.major);
+	Serial.println("-");
+	Serial.println(localVersion.minor);
+
+	Serial.println("LOCALVERSION :");
+	Serial.println(device->version.major);
+	Serial.println("-");
+	Serial.println(device->version.major);
 		if (device->version.major != localVersion.major ||
 			device->version.minor != localVersion.minor) {
-			//Serial.println("Wrong version");
+			Serial.println("Wrong version");
 			return (false);
 		}
 		return (true);
