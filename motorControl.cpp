@@ -6,7 +6,7 @@ void	updateTest(struct s_plugin *plugin)
 	respondOk();
 }
 
-void	controlTest(struct s_plugin *plugin, t_buffer *param)
+void	motorControl(struct s_plugin *plugin, t_buffer *param)
 {
 	int	speed = atoi(param->data);
 	// Serial.print("Motor : \ndata:");
