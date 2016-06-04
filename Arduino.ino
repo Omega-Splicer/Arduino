@@ -2,7 +2,7 @@
 
 void		setup()
 {
-  	pinMode(STBY, OUTPUT);
+  pinMode(STBY, OUTPUT);
 	//Serial.begin(250000);
 	Serial.begin(9600);
 }

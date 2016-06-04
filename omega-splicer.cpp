@@ -33,6 +33,8 @@ int			run()
 		detect_plugin(&device);
 		while (running)
 		{
+    
+
 			while (!commandEnded(&buffer))
 				if (!rcvData(&buffer))
 					return respondKoFrimWare("communication error, or buffer full");
