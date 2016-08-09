@@ -9,9 +9,9 @@ before_install:
   # - sudo mv arduino-1.6.5 /usr/local/share/arduino
   # -  sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
 install:
-  - ./arduino-1.6.5/arduino --install-library "Adafruit SleepyDog Library,Adafruit MQTT Library"
+  - ./arduino-1.6.5/arduino --pref "boardsmanager.additional.urls=http://rfduino.com/package_rfduino_index.json" --install-boards "RFduino:RFduino" > /tmp/install-rfduino.log --install-library "Adafruit SleepyDog Library,Adafruit MQTT Library"
 script:
-  - ./arduino-1.6.5/arduino --verify --board arduino:avr:uno $PWD/Omega-Splicer/Omega-Splicer.ino
+  - ./arduino-1.6.5/arduino --verify --board RFduino:RFduino $PWD/Omega-Splicer/Omega-Splicer.ino
 notifications:
   email:
     on_success: change
