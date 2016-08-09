@@ -11,7 +11,7 @@ before_install:
 install:
   - ./arduino-1.6.5/arduino --install-library "Adafruit SleepyDog Library,Adafruit MQTT Library"
 script:
-  - ./arduino-1.6.5/arduino --verify --board arduino:avr:uno $PWD/Arduino.ino
+  - ./arduino-1.6.5/arduino --verify --board arduino:avr:uno $PWD/Omega-Splicer/Omega-Splicer.ino
 notifications:
   email:
     on_success: change
